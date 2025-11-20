@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CBM Project Gallery</title>
+
+  <style>
+    /* ===== General Styles ===== */
+    body {
+      font-family: "Segoe UI", Roboto, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f7f7f7;
+      color: #333333;
+      overflow-x: hidden;
+    }
+
+    /* ===== Header ===== */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: #C8102E;
+      color: white;
+      padding: 15px 40px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      animation: slideDown 0.8s ease;
+    }
+
+    @keyframes slideDown {
+      from { transform: translateY(-80px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    header .logo {
+      display: flex;
+      align-items: center;
+    }
+
+    header .logo img {
+      height: 50px;
+      margin-right: 15px;
+      transition: transform 0.4s ease;
+    }
+
+    header .logo img:hover {
+      transform: rotate(-5deg) scale(1.05);
+    }
+
+    header h1 {
+      font-size: 1.5rem;
+      margin: 0;
+      letter-spacing: 0.5px;
+    }
+
+    nav a {
+      color: white;
+      text-decoration: none;
+      margin-left: 20px;
+      font-weight: 500;
+      transition: color 0.3s, transform 0.3s;
+    }
+
+    nav a:hover,
+    nav a.active {
+      color: #FFD100;
+      transform: translateY(-2px);
+    }
+
+    /* ===== Filter Section ===== */
+    .filter-section {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      padding: 25px;
+      background-color: white;
+      border-bottom: 2px solid #FFD100;
+      animation: fadeIn 1s ease;
+    }
+
+    .filter-section input,
+    .filter-section select {
+      padding: 10px 15px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 1rem;
+      width: 300px;
+      outline: none;
+      transition: 0.3s ease;
+    }
+
+    .filter-section input:focus,
+    .filter-section select:focus {
+      border-color: #C8102E;
+      box-shadow: 0 0 8px rgba(200,16,46,0.4);
+      transform: scale(1.02);
+    }
+
+    /* ===== Gallery Section ===== */
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 25px;
+      padding: 40px;
+      background-color: #f9f9f9;
+    }
+
+    .gallery-item {
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      transition: transform 0.4s ease, box-shadow 0.4s ease;
+      opacity: 0;
+      transform: translateY(40px);
+      cursor: pointer;
+    }
+
+    .gallery-item.visible {
+      animation: fadeInUp 0.7s forwards;
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(40px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .gallery-item:hover {
+      transform: translateY(-8px) scale(1.02);
+      box-shadow: 0 10px 25px rgba(200,16,46,0.25);
+    }
+
+    .gallery-item img {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      transition: transform 0.5s ease;
+    }
+
+    .gallery-item:hover img {
+      transform: scale(1.1);
+    }
+
+    .gallery-info {
+      padding: 15px;
+    }
+
+    .gallery-info h3 {
+      color: #C8102E;
+      font-size: 1rem;
+      margin-bottom: 5px;
+    }
+
+    .gallery-info p {
+      margin: 3px 0;
+      font-size: 0.9rem;
+      color: #555;
+    }
+
+    /* ===== Footer ===== */
+    footer {
+      text-align: center;
+      padding: 20px;
+      background-color: #333333;
+      color: #FFD100;
+      font-weight: bold;
+      letter-spacing: 0.5px;
+      animation: fadeIn 1.5s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    /* ===== No Results Message ===== */
+    #noResults {
+      text-align: center;
+      font-size: 1.1rem;
+      color: #777;
+      display: none;
+      opacity: 0;
+      transition: opacity 0.6s ease;
+      margin-bottom: 40px;
+    }
+    #noResults.show {
+      display: block;
+      opacity: 1;
+    }
+
+    /* ===== Popup (Lightbox) ===== */
+    .popup {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+      z-index: 1000;
+    }
+
+    .popup.active {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .popup-content {
+      background: white;
+      border-radius: 12px;
+      max-width: 700px;
+      width: 90%;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 0 20px rgba(255,209,0,0.5);
+      animation: zoomIn 0.4s ease;
+      position: relative;
+    }
+
+    @keyframes zoomIn {
+      from { transform: scale(0.8); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .popup-content img {
+      width: 100%;
+      border-radius: 10px;
+      margin-bottom: 15px;
+    }
+
+    .popup-content h3 {
+      color: #C8102E;
+      margin-bottom: 10px;
+    }
+
+    .popup-content p {
+      color: #333;
+      font-size: 0.95rem;
+    }
+
+    .close-btn {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      font-size: 1.5rem;
+      color: #C8102E;
+      cursor: pointer;
+      transition: transform 0.3s ease, color 0.3s ease;
+    }
+
+    .close-btn:hover {
+      transform: scale(1.2);
+      color: #FFD100;
+    }
+
+    /* ===== Navigation Buttons ===== */
+    .nav-btn {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background-color: rgba(200,16,46,0.9);
+      color: white;
+      border: none;
+      font-size: 1.8rem;
+      padding: 10px 15px;
+      cursor: pointer;
+      border-radius: 50%;
+      transition: background 0.3s ease, transform 0.3s ease;
+    }
+
+    .nav-btn:hover {
+      background-color: #FFD100;
+      color: #C8102E;
+      transform: scale(1.1);
+    }
+
+    .prev-btn { left: -50px; }
+    .next-btn { right: -50px; }
+
+    @media (max-width: 600px) {
+      .prev-btn, .next-btn { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <div class="logo">
+      <img src="cbm-logo.png" alt="CBM Logo">
+      <h1>CBM Project Gallery</h1>
+    </div>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="upload.html">Upload</a>
+      <a class="active" href="gallery.html">Gallery</a>
+    </nav>
+  </header>
+
+  <!-- Search & Filter -->
+  <section class="filter-section">
+    <input type="text" id="searchInput" placeholder="Search by project name, code, or location...">
+    <select id="countryFilter">
+      <option value="">All Countries</option>
+      <option value="Kenya">Kenya</option>
+      <option value="Uganda">Uganda</option>
+      <option value="Tanzania">Tanzania</option>
+      <option value="Ethiopia">Ethiopia</option>
+    </select>
+  </section>
+
+  <!-- Gallery -->
+  <section class="gallery" id="gallery">
+    <div class="gallery-item" data-country="Kenya">
+      <img src="images/project1.jpg" alt="Project 1">
+      <div class="gallery-info">
+        <h3>Project Code: CBM-001</h3>
+        <p>Description: Inclusive Education Initiative</p>
+        <p>Location: Bungoma, Kenya</p>
+        <p>Date Taken: 2025-05-12</p>
+      </div>
+    </div>
+
+    <div class="gallery-item" data-country="Uganda">
+      <img src="images/project2.jpg" alt="Project 2">
+      <div class="gallery-info">
+        <h3>Project Code: CBM-002</h3>
+        <p>Description: Eye Health Outreach</p>
+        <p>Location: Kampala, Uganda</p>
+        <p>Date Taken: 2025-06-01</p>
+      </div>
+    </div>
+
+    <div class="gallery-item" data-country="Tanzania">
+      <img src="images/project3.jpg" alt="Project 3">
+      <div class="gallery-info">
+        <h3>Project Code: CBM-003</h3>
+        <p>Description: Disability Inclusion Training</p>
+        <p>Location: Arusha, Tanzania</p>
+        <p>Date Taken: 2025-04-20</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- No Results Message -->
+  <p id="noResults">No results found. Try changing your search or filters.</p>
+
+  <!-- Footer -->
+  <footer>
+    <p>Made by Adika 💛</p>
+  </footer>
+
+  <!-- Popup -->
+  <div class="popup" id="popup">
+    <div class="popup-content" id="popupContent">
+      <span class="close-btn" id="closePopup">&times;</span>
+      <button class="nav-btn prev-btn" id="prevBtn">&#10094;</button>
+      <button class="nav-btn next-btn" id="nextBtn">&#10095;</button>
+      <img id="popupImg" src="" alt="">
+      <h3 id="popupTitle"></h3>
+      <p id="popupDesc"></p>
+      <p id="popupLocation"></p>
+      <p id="popupDate"></p>
+    </div>
+  </div>
+
+  <script>
+    // ===== Live Search and Country Filter =====
+    const searchInput = document.getElementById("searchInput");
+    const countryFilter = document.getElementById("countryFilter");
+    const galleryItems = document.querySelectorAll(".gallery-item");
+    const noResults = document.getElementById("noResults");
+
+    function filterGallery() {
+      const searchValue = searchInput.value.toLowerCase();
+      const countryValue = countryFilter.value;
+      let visibleCount = 0;
+
+      galleryItems.forEach(item => {
+        const text = item.innerText.toLowerCase();
+        const country = item.getAttribute("data-country");
+
+        if (text.includes(searchValue) && (countryValue === "" || country === countryValue)) {
+          item.style.opacity = "1";
+          item.style.display = "block";
+          visibleCount++;
+        } else {
+          item.style.opacity = "0";
+          setTimeout(() => (item.style.display = "none"), 300);
+        }
+      });
+
+      // Fade-in "No Results" message
+      noResults.classList.toggle("show", visibleCount === 0);
+    }
+
+    searchInput.addEventListener("input", filterGallery);
+    countryFilter.addEventListener("change", filterGallery);
+
+    // ===== Scroll Animation =====
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("visible");
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.2 });
+
+    galleryItems.forEach(item => observer.observe(item));
+
+    // ===== Popup Logic =====
+    const popup = document.getElementById("popup");
+    const popupImg = document.getElementById("popupImg");
+    const popupTitle = document.getElementById("popupTitle");
+    const popupDesc = document.getElementById("popupDesc");
+    const popupLocation = document.getElementById("popupLocation");
+    const popupDate = document.getElementById("popupDate");
+    const closePopup = document.getElementById("closePopup");
+    const nextBtn = document.getElementById("nextBtn");
+    const prevBtn = document.getElementById("prevBtn");
+
+    let currentIndex = 0;
+
+    const openPopup = (index) => {
+      const item = galleryItems[index];
+      const img = item.querySelector("img").src;
+      const title = item.querySelector("h3").innerText;
+      const desc = item.querySelector("p:nth-of-type(1)").innerText;
+      const location = item.querySelector("p:nth-of-type(2)").innerText;
+      const date = item.querySelector("p:nth-of-type(3)").innerText;
+
+      popupImg.src = img;
+      popupTitle.innerText = title;
+      popupDesc.innerText = desc;
+      popupLocation.innerText = location;
+      popupDate.innerText = date;
+
+      popup.classList.add("active");
+      currentIndex = index;
+    };
+
+    galleryItems.forEach((item, index) => {
+      item.addEventListener("click", () => openPopup(index));
+    });
+
+    closePopup.addEventListener("click", () => popup.classList.remove("active"));
+    popup.addEventListener("click", e => {
+      if (e.target === popup) popup.classList.remove("active");
+    });
+
+    nextBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      currentIndex = (currentIndex + 1) % galleryItems.length;
+      openPopup(currentIndex);
+    });
+
+    prevBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      currentIndex = (currentIndex - 1 + galleryItems.length) % galleryItems.length;
+      openPopup(currentIndex);
+    });
+  </script>
+</body>
+</html>

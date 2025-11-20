@@ -1,0 +1,517 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>The Bungoma PR Gallery</title>
+  <style>
+    :root{
+      --red:#c81d25;
+      --black:#111;
+      --white:#fff;
+      --muted:#f4f4f4;
+      --glass: rgba(255,255,255,0.06);
+      font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:linear-gradient(180deg,#fff 0,#f8f8f8 100%);color:var(--black)}
+    header{background:var(--red);color:var(--white);padding:20px 24px;display:flex;align-items:center;gap:20px}
+    .logo{font-weight:800;font-size:20px;letter-spacing:0.6px}
+    nav{margin-left:auto;display:flex;gap:10px}
+    .btn{background:transparent;border:2px solid rgba(255,255,255,0.18);color:var(--white);padding:8px 14px;border-radius:8px;cursor:pointer}
+    .container{max-width:1100px;margin:28px auto;padding:0 18px}
+    .hero{display:flex;align-items:center;gap:24px;margin-bottom:20px}
+    .hero h1{font-size:28px;margin:0}
+
+    /* Controls */
+    .controls{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px}
+    .card{background:var(--white);border-radius:12px;padding:16px;box-shadow:0 6px 18px rgba(0,0,0,0.06)}
+    .upload-area{flex:1;min-width:260px}
+    label.field{display:block;margin-bottom:8px;font-weight:600}
+    input[type=text],input[type=date],select,textarea{width:100%;padding:8px;border:1px solid #ddd;border-radius:8px;margin-bottom:10px}
+    input[type=file]{margin-bottom:10px}
+    .radio-row{display:flex;gap:10px;align-items:center}
+    .small{font-size:13px;color:#666}
+
+    /* Gallery */
+    .gallery-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+    .media-card{background:var(--white);border-radius:10px;overflow:hidden;position:relative}
+    .media-thumb{width:100%;height:160px;object-fit:cover;background:#eee}
+    .media-meta{padding:10px}
+    .meta-row{display:flex;justify-content:space-between;align-items:center}
+    .meta-row .title{font-weight:700}
+    .chip{padding:6px 8px;border-radius:8px;background:var(--muted);font-size:12px}
+    .actions{display:flex;gap:8px;margin-top:8px}
+    .action-btn{padding:6px 8px;border-radius:8px;border:1px solid #ddd;background:transparent;cursor:pointer}
+
+    /* Modal */
+    .modal{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:none;align-items:center;justify-content:center;padding:20px}
+    .modal.open{display:flex}
+    .modal-content{background:var(--white);max-width:900px;width:100%;border-radius:10px;overflow:hidden}
+    .viewer{display:flex;gap:12px;align-items:flex-start}
+    .viewer-media{flex:1;padding:14px}
+    .viewer-meta{width:300px;padding:14px;border-left:1px solid #eee}
+    .viewer img,.viewer video{max-width:100%;max-height:70vh;border-radius:8px}
+
+    footer{padding:20px 24px;text-align:center;color:#444;margin-top:28px}
+
+    /* Responsive */
+    @media (max-width:800px){
+      .viewer{flex-direction:column}
+      .viewer-meta{width:100%;border-left:none;border-top:1px solid #eee}
+    }
+
+    /* Small helpers */
+    .muted{color:#666}
+    .flex{display:flex}
+    .gap{gap:8px}
+    .hide{display:none}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">THE BUNGOMA PR GALLERY</div>
+    <nav>
+      <button class="btn" id="navUpload">Upload</button>
+      <button class="btn" id="navView">View Gallery</button>
+      <button class="btn" id="navGuide">User Guide</button>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <div>
+        <h1 style="color:var(--red)">Showcasing Bungoma Red Cross Moments</h1>
+        <p class="small">Upload photos and videos, add captions & photographer details, sort and share.</p>
+      </div>
+    </section>
+
+    <section class="controls">
+      <div class="card upload-area" id="uploadCard">
+        <h3>Upload Media</h3>
+        <label class="field">Choose type</label>
+        <div class="radio-row">
+          <label><input type="radio" name="mediaType" value="image" checked> Image</label>
+          <label><input type="radio" name="mediaType" value="video"> Video</label>
+        </div>
+
+        <label class="field">File</label>
+        <input type="file" id="fileInput" accept="image/*,video/*">
+
+        <label class="field">Caption</label>
+        <textarea id="caption" rows="2" placeholder="Describe the activity..."></textarea>
+
+        <label class="field">Photographer (required for images)</label>
+        <input type="text" id="photographer" placeholder="Full name">
+
+        <label class="field">Activity / Event Name</label>
+        <input type="text" id="activityName" placeholder="e.g. Tree Planting - Banantega">
+
+        <label class="field">Date Taken</label>
+        <input type="date" id="dateTaken">
+
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button id="uploadBtn" class="btn" style="background:var(--red);border:none">Upload</button>
+          <button id="clearForm" class="btn">Clear</button>
+        </div>
+        <p class="small" id="uploadMsg"></p>
+      </div>
+
+      <div class="card" style="flex:2" id="viewControls">
+        <h3>View / Search</h3>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <input type="text" id="searchInput" placeholder="Search by caption, activity or photographer">
+          <select id="sortSelect">
+            <option value="newest">Newest</option>
+            <option value="oldest">Oldest</option>
+            <option value="activity">Activity (A→Z)</option>
+            <option value="photographer">Photographer (A→Z)</option>
+          </select>
+          <select id="filterType">
+            <option value="all">All</option>
+            <option value="image">Images</option>
+            <option value="video">Videos</option>
+          </select>
+          <button id="refreshBtn" class="btn">Refresh</button>
+        </div>
+        <p class="small">Click a media card to open the viewer. Use the download button to change format or save locally.</p>
+      </div>
+    </section>
+
+    <section class="card" style="margin-top:18px">
+      <h3>Gallery</h3>
+      <div id="gallery" class="gallery-grid" aria-live="polite"></div>
+    </section>
+
+  </main>
+
+  <!-- Modal viewer -->
+  <div id="modal" class="modal" role="dialog" aria-modal="true">
+    <div class="modal-content">
+      <div class="viewer">
+        <div class="viewer-media" id="viewerMedia"></div>
+        <div class="viewer-meta">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <h3 id="vTitle">Title</h3>
+            <div><button id="closeModal" class="btn">Close</button></div>
+          </div>
+          <p class="muted" id="vCaption"></p>
+          <p><strong>Photographer:</strong> <span id="vPhotog"></span></p>
+          <p><strong>Date:</strong> <span id="vDate"></span></p>
+          <p><strong>Activity:</strong> <span id="vActivity"></span></p>
+
+          <div style="margin-top:14px">
+            <label class="field">Download as</label>
+            <select id="downloadFormat">
+              <option value="image/png">PNG</option>
+              <option value="image/jpeg">JPEG</option>
+              <option value="image/webp">WEBP</option>
+              <option value="original">Original</option>
+            </select>
+            <div style="display:flex;gap:8px;margin-top:8px">
+              <button id="downloadBtn" class="btn">Download</button>
+              <button id="shareBtn" class="btn">Share</button>
+              <button id="editBtn" class="btn">Edit Photo</button>
+            </div>
+          </div>
+
+          <div id="shareOptions" style="margin-top:12px;display:none">
+            <p class="small">Share via:</p>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="action-btn" id="shareWhats">WhatsApp</button>
+              <button class="action-btn" id="shareEmail">Email</button>
+              <button class="action-btn" id="shareOutlook">Outlook</button>
+              <button class="action-btn" id="copyLink">Copy Link</button>
+            </div>
+          </div>
+
+          <div id="editor" style="margin-top:12px;display:none">
+            <h4>Photo Editor</h4>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="action-btn" id="rotateLeft">Rotate -90°</button>
+              <button class="action-btn" id="rotateRight">Rotate +90°</button>
+              <label class="small">Brightness <input type="range" id="brightness" min="0" max="200" value="100"></label>
+              <label class="small">Contrast <input type="range" id="contrast" min="0" max="200" value="100"></label>
+              <button class="action-btn" id="applyEdits">Apply & Preview</button>
+              <button class="action-btn" id="resetEdits">Reset</button>
+            </div>
+            <canvas id="editCanvas" style="width:100%;margin-top:8px;border-radius:6px;background:#222"></canvas>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div>© The Bungoma PR Gallery — Built for Bungoma Red Cross | Theme: Red · Black · White</div>
+  </footer>
+
+  <script>
+    // Simple client-only gallery app. Data persists in localStorage under key 'bungoma_gallery_v1'
+    // Each item: {id, type:'image'|'video', name, caption, photographer, activity, date, dataUrl, createdAt}
+
+    const storageKey = 'bungoma_gallery_v1';
+    const fileInput = document.getElementById('fileInput');
+    const uploadBtn = document.getElementById('uploadBtn');
+    const uploadMsg = document.getElementById('uploadMsg');
+
+    const galleryEl = document.getElementById('gallery');
+    const searchInput = document.getElementById('searchInput');
+    const sortSelect = document.getElementById('sortSelect');
+    const filterType = document.getElementById('filterType');
+    const refreshBtn = document.getElementById('refreshBtn');
+
+    const modal = document.getElementById('modal');
+    const viewerMedia = document.getElementById('viewerMedia');
+    const vTitle = document.getElementById('vTitle');
+    const vCaption = document.getElementById('vCaption');
+    const vPhotog = document.getElementById('vPhotog');
+    const vDate = document.getElementById('vDate');
+    const vActivity = document.getElementById('vActivity');
+    const downloadFormat = document.getElementById('downloadFormat');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const shareBtn = document.getElementById('shareBtn');
+    const shareOptions = document.getElementById('shareOptions');
+    const shareWhats = document.getElementById('shareWhats');
+    const shareEmail = document.getElementById('shareEmail');
+    const shareOutlook = document.getElementById('shareOutlook');
+    const copyLink = document.getElementById('copyLink');
+    const editBtn = document.getElementById('editBtn');
+    const editor = document.getElementById('editor');
+
+    const rotateLeft = document.getElementById('rotateLeft');
+    const rotateRight = document.getElementById('rotateRight');
+    const brightness = document.getElementById('brightness');
+    const contrast = document.getElementById('contrast');
+    const applyEdits = document.getElementById('applyEdits');
+    const resetEdits = document.getElementById('resetEdits');
+    const editCanvas = document.getElementById('editCanvas');
+
+    let currentItem = null;
+    let editState = {rotation:0,brightness:100,contrast:100};
+
+    // Nav
+    document.getElementById('navUpload').addEventListener('click',()=>{window.scrollTo({top:120,behavior:'smooth'})});
+    document.getElementById('navView').addEventListener('click',()=>{window.scrollTo({top:360,behavior:'smooth'})});
+    document.getElementById('navGuide').addEventListener('click',()=>{alert('User Guide:\n\n1) Use Upload to add images or videos. Images must include photographer name.\n2) Search by caption, activity or photographer.\n3) Click a card to view, download or share.\n4) Edits are client-side; to save permanently, download and re-upload.');});
+
+    // Helpers for storage
+    function loadItems(){
+      try{
+        const raw = localStorage.getItem(storageKey);
+        return raw ? JSON.parse(raw) : [];
+      }catch(e){return []}
+    }
+    function saveItems(items){localStorage.setItem(storageKey,JSON.stringify(items))}
+
+    // Render gallery
+    function renderGallery(){
+      const q = searchInput.value.trim().toLowerCase();
+      const items = loadItems();
+      // filter
+      let filtered = items.filter(it=>{
+        if(filterType.value!=='all' && it.type!==filterType.value) return false;
+        if(!q) return true;
+        return (it.caption||'').toLowerCase().includes(q) || (it.activity||'').toLowerCase().includes(q) || (it.photographer||'').toLowerCase().includes(q);
+      });
+      // sort
+      if(sortSelect.value==='newest') filtered.sort((a,b)=>b.createdAt - a.createdAt);
+      if(sortSelect.value==='oldest') filtered.sort((a,b)=>a.createdAt - b.createdAt);
+      if(sortSelect.value==='activity') filtered.sort((a,b)=>(a.activity||'').localeCompare(b.activity||''));
+      if(sortSelect.value==='photographer') filtered.sort((a,b)=>(a.photographer||'').localeCompare(b.photographer||''));
+
+      galleryEl.innerHTML = '';
+      if(filtered.length===0){galleryEl.innerHTML = '<div class="muted">No media found. Upload to get started.</div>';return}
+
+      for(const it of filtered){
+        const card = document.createElement('div');card.className='media-card';
+        const thumb = document.createElement(it.type==='image' ? 'img' : 'video');
+        thumb.className='media-thumb';
+        if(it.type==='video'){thumb.muted=true;thumb.loop=true;thumb.autoplay=true;thumb.playsInline=true}
+        thumb.src = it.dataUrl;
+        thumb.alt = it.caption||it.activity||'media';
+        thumb.addEventListener('click',()=>openViewer(it.id));
+        card.appendChild(thumb);
+        const meta = document.createElement('div');meta.className='media-meta';
+        meta.innerHTML = `
+          <div class="meta-row"><div class="title">${escapeHtml(it.activity||'Untitled')}</div><div class="chip">${it.type.toUpperCase()}</div></div>
+          <div class="small muted">${escapeHtml(it.photographer||'—')} • ${it.date||''}</div>
+        `;
+        const actions = document.createElement('div');actions.className='actions';
+        const dl = document.createElement('button');dl.className='action-btn';dl.textContent='Download';dl.addEventListener('click',()=>downloadItem(it.id,'original'));
+        const sh = document.createElement('button');sh.className='action-btn';sh.textContent='Share';sh.addEventListener('click',()=>{openViewer(it.id);shareOptions.style.display='block'});
+        actions.appendChild(dl);actions.appendChild(sh);
+        meta.appendChild(actions);
+        card.appendChild(meta);
+        galleryEl.appendChild(card);
+      }
+    }
+
+    function escapeHtml(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+
+    // Upload handling
+    uploadBtn.addEventListener('click',async()=>{
+      const file = fileInput.files[0];
+      const captionVal = document.getElementById('caption').value.trim();
+      const photographerVal = document.getElementById('photographer').value.trim();
+      const activityVal = document.getElementById('activityName').value.trim();
+      const dateVal = document.getElementById('dateTaken').value;
+      const mediaType = document.querySelector('input[name="mediaType"]:checked').value;
+
+      if(!file){uploadMsg.textContent='Please choose a file to upload.';return}
+      if(mediaType==='image' && !photographerVal){uploadMsg.textContent='Please enter photographer name for images.';return}
+
+      uploadMsg.textContent='Reading file...';
+      const dataUrl = await readFileAsDataURL(file);
+      const items = loadItems();
+      const newItem = {
+        id: 'm_' + Date.now() + '_' + Math.random().toString(36).slice(2,8),
+        type: mediaType,
+        name: file.name,
+        caption: captionVal,
+        photographer: photographerVal,
+        activity: activityVal,
+        date: dateVal,
+        dataUrl: dataUrl,
+        createdAt: Date.now()
+      };
+      items.push(newItem);saveItems(items);
+      uploadMsg.textContent='Uploaded successfully.';
+      fileInput.value='';document.getElementById('caption').value='';document.getElementById('photographer').value='';document.getElementById('activityName').value='';document.getElementById('dateTaken').value='';
+      renderGallery();
+      setTimeout(()=>uploadMsg.textContent='',2500);
+    });
+
+    document.getElementById('clearForm').addEventListener('click',()=>{fileInput.value='';document.getElementById('caption').value='';document.getElementById('photographer').value='';document.getElementById('activityName').value='';document.getElementById('dateTaken').value='';uploadMsg.textContent='';});
+
+    function readFileAsDataURL(file){
+      return new Promise((res,rej)=>{
+        const fr = new FileReader();fr.onload = ()=>res(fr.result);fr.onerror=rej;fr.readAsDataURL(file);
+      })
+    }
+
+    // Viewer
+    function openViewer(id){
+      const items = loadItems();
+      const it = items.find(x=>x.id===id);if(!it) return;
+      currentItem = it;
+      viewerMedia.innerHTML = '';
+      if(it.type==='image'){
+        const img = document.createElement('img');img.src = it.dataUrl;img.alt = it.caption||it.activity;viewerMedia.appendChild(img);
+      }else{
+        const vid = document.createElement('video');vid.src = it.dataUrl;vid.controls=true;viewerMedia.appendChild(vid);
+      }
+      vTitle.textContent = it.activity || it.name || 'Media';
+      vCaption.textContent = it.caption || '';
+      vPhotog.textContent = it.photographer || '—';
+      vDate.textContent = it.date || (new Date(it.createdAt)).toLocaleDateString();
+      vActivity.textContent = it.activity || '—';
+      shareOptions.style.display='none';
+      editor.style.display='none';
+      modal.classList.add('open');
+    }
+
+    document.getElementById('closeModal').addEventListener('click',()=>{modal.classList.remove('open');currentItem=null});
+    modal.addEventListener('click',(e)=>{if(e.target===modal) modal.classList.remove('open');});
+
+    downloadBtn.addEventListener('click',()=>{if(!currentItem) return;downloadItem(currentItem.id,downloadFormat.value)});
+
+    // Download and format conversion
+    async function downloadItem(id,format){
+      const items = loadItems();
+      const it = items.find(x=>x.id===id);if(!it) return;
+      if(it.type==='video' || format==='original'){
+        // Direct download blob via link
+        const a = document.createElement('a');a.href = it.dataUrl; a.download = it.name; document.body.appendChild(a); a.click(); a.remove();
+        return;
+      }
+      // Convert image via canvas
+      const img = await loadImage(it.dataUrl);
+      const canvas = document.createElement('canvas');
+      canvas.width = img.naturalWidth; canvas.height = img.naturalHeight;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img,0,0);
+      const mime = format; // e.g. 'image/png'
+      const dataUrl = canvas.toDataURL(mime);
+      const a = document.createElement('a');a.href = dataUrl; a.download = (it.name||'image') + (mime==='image/png'?'.png':mime==='image/webp'?'.webp':'.jpg'); document.body.appendChild(a); a.click(); a.remove();
+    }
+
+    function loadImage(src){return new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=rej;i.src=src})}
+
+    // Share helpers: opens share via web intents
+    shareBtn.addEventListener('click',()=>{shareOptions.style.display = shareOptions.style.display==='none' ? 'block' : 'none'});
+    shareWhats.addEventListener('click',()=>{
+      if(!currentItem) return; const text = encodeURIComponent((currentItem.caption||'') + '\n' + (currentItem.activity||'')); const url = currentItem.dataUrl; const openUrl = `https://wa.me/?text=${text}%0A${encodeURIComponent(url)}`; window.open(openUrl,'_blank');
+    });
+    shareEmail.addEventListener('click',()=>{
+      if(!currentItem) return; const subject = encodeURIComponent('Shared media from Bungoma PR Gallery'); const body = encodeURIComponent((currentItem.caption||'') + '\n' + (currentItem.activity||'') + '\n' + currentItem.dataUrl); window.open(`mailto:?subject=${subject}&body=${body}`);
+    });
+    shareOutlook.addEventListener('click',()=>{ if(!currentItem) return; const subject = encodeURIComponent('Shared media from Bungoma PR Gallery'); const body = encodeURIComponent((currentItem.caption||'') + '\n' + (currentItem.activity||'') + '\n' + currentItem.dataUrl); const url = `https://outlook.live.com/owa/?path=/mail/action/compose&subject=${subject}&body=${body}`; window.open(url,'_blank'); });
+    copyLink.addEventListener('click',()=>{ if(!currentItem) return; navigator.clipboard.writeText(currentItem.dataUrl).then(()=>alert('Direct link copied to clipboard (data URL).'))});
+
+    // Editor: show editor only for images
+    editBtn.addEventListener('click',()=>{
+      if(!currentItem || currentItem.type!=='image') return alert('Editor available for images only.');
+      editor.style.display = editor.style.display==='none' ? 'block' : 'none';
+      if(editor.style.display==='block') loadEditor(currentItem.dataUrl);
+    });
+
+    function loadEditor(src){
+      const ctx = editCanvas.getContext('2d');
+      const img = new Image();img.crossOrigin='anonymous';img.onload = ()=>{
+        // size canvas to image but constrain display size
+        editCanvas.width = img.naturalWidth; editCanvas.height = img.naturalHeight;
+        editCanvas.style.height = Math.min(360, img.naturalHeight * (900/img.naturalWidth)) + 'px';
+        ctx.drawImage(img,0,0);
+        editState = {rotation:0,brightness:100,contrast:100};
+        brightness.value = 100; contrast.value = 100;
+      };
+      img.src = src;
+    }
+
+    function applyEditor(){
+      if(!currentItem) return; const ctx = editCanvas.getContext('2d'); const w = editCanvas.width, h = editCanvas.height; const img = new Image(); img.onload=()=>{
+        // apply rotation & filters
+        const rad = editState.rotation * Math.PI/180;
+        // create temp canvas
+        const tmp = document.createElement('canvas');
+        if(Math.abs(editState.rotation)%180===90){ tmp.width = h; tmp.height = w; } else { tmp.width = w; tmp.height = h; }
+        const tctx = tmp.getContext('2d');
+        tctx.save();
+        // center and rotate
+        tctx.translate(tmp.width/2,tmp.height/2); tctx.rotate(rad);
+        tctx.drawImage(img, -w/2, -h/2);
+        tctx.restore();
+        // get pixels and apply simple brightness/contrast
+        const id = tctx.getImageData(0,0,tmp.width,tmp.height);
+        const data = id.data; const b = (editState.brightness-100)/100; const c = (editState.contrast-100)/100;
+        for(let i=0;i<data.length;i+=4){
+          // brightness
+          data[i] = clamp(data[i] + 255*b);
+          data[i+1] = clamp(data[i+1] + 255*b);
+          data[i+2] = clamp(data[i+2] + 255*b);
+          // contrast (simple)
+          data[i] = clamp(((data[i]-128)*(1+c))+128);
+          data[i+1] = clamp(((data[i+1]-128)*(1+c))+128);
+          data[i+2] = clamp(((data[i+2]-128)*(1+c))+128);
+        }
+        tctx.putImageData(id,0,0);
+        // draw to visible canvas
+        editCanvas.width = tmp.width; editCanvas.height = tmp.height;
+        const visibleCtx = editCanvas.getContext('2d'); visibleCtx.clearRect(0,0,editCanvas.width,editCanvas.height);
+        visibleCtx.drawImage(tmp,0,0);
+      };
+      img.src = currentItem.dataUrl;
+    }
+
+    function clamp(v){return Math.max(0,Math.min(255,Math.round(v)))}
+
+    rotateLeft.addEventListener('click',()=>{editState.rotation = (editState.rotation - 90) % 360; applyEditor()});
+    rotateRight.addEventListener('click',()=>{editState.rotation = (editState.rotation + 90) % 360; applyEditor()});
+    brightness.addEventListener('input',()=>{editState.brightness = Number(brightness.value)});
+    contrast.addEventListener('input',()=>{editState.contrast = Number(contrast.value)});
+    applyEdits.addEventListener('click',applyEditor);
+    resetEdits.addEventListener('click',()=>{editState = {rotation:0,brightness:100,contrast:100};brightness.value=100;contrast.value=100;loadEditor(currentItem.dataUrl)});
+
+    // If user wants to keep edits: they can press Download after applying edits; we'll replace currentItem.dataUrl with canvas data when downloading if editor visible
+    downloadBtn.addEventListener('click',async ()=>{
+      if(editor.style.display==='block' && currentItem.type==='image'){
+        // get canvas data; convert to selected format
+        const fmt = downloadFormat.value==='original' ? 'image/png' : downloadFormat.value;
+        const dataUrl = editCanvas.toDataURL(fmt);
+        const a = document.createElement('a'); a.href = dataUrl; a.download = (currentItem.name||'edited') + (fmt==='image/png'?'.png':fmt==='image/webp'?'.webp':'.jpg'); document.body.appendChild(a); a.click(); a.remove();
+      }
+    });
+
+    // Utility to initialize
+    function init(){
+      renderGallery();
+      refreshBtn.addEventListener('click',renderGallery);
+      searchInput.addEventListener('input',renderGallery);
+      sortSelect.addEventListener('change',renderGallery);
+      filterType.addEventListener('change',renderGallery);
+    }
+    init();
+
+    // small UX: allow dropping files onto upload area
+    const uploadCard = document.getElementById('uploadCard');
+    ['dragenter','dragover'].forEach(e=>uploadCard.addEventListener(e,ev=>{ev.preventDefault();uploadCard.style.boxShadow='0 10px 30px rgba(200,0,0,0.08)'}));
+    ['dragleave','drop'].forEach(e=>uploadCard.addEventListener(e,ev=>{ev.preventDefault();uploadCard.style.boxShadow='none'}));
+    uploadCard.addEventListener('drop',(ev)=>{const f = ev.dataTransfer.files[0]; if(f){fileInput.files = ev.dataTransfer.files;} });
+
+    // keyboard shortcuts
+    document.addEventListener('keydown',(e)=>{ if(e.key==='Escape'){modal.classList.remove('open')} });
+
+    // Initial demo data (only if empty) - comment out in production
+    (function seedDemo(){
+      const items = loadItems(); if(items.length>0) return;
+      // small placeholder via minimal SVGs to avoid large base64
+      const svg = `data:image/svg+xml;utf8,${encodeURIComponent('<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"800\" height=\"500\"><rect width=\"100%\" height=\"100%\" fill=\"#eee\" /><text x=\"50%\" y=\"50%\" dominant-baseline=\"middle\" text-anchor=\"middle\" font-size=\"28\" fill=\"#c81d25\">Demo Image</text></svg>')}`;
+      const demo = [{id:'demo1',type:'image',name:'demo.svg',caption:'Tree planting day',photographer:'Ken Red',activity:'Tree Planting',date:'2025-09-29',dataUrl:svg,createdAt:Date.now()-1000000}];
+      saveItems(demo);
+      renderGallery();
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CBM Gallery - Choose Action</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(120deg, #E2001A, #FFCC00);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      color: white;
+      animation: slideIn 1.5s ease forwards;
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateY(100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+      text-shadow: 0 4px 8px rgba(0,0,0,0.3);
+      animation: fadeIn 2s ease forwards;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .button-container {
+      display: flex;
+      gap: 2rem;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 2rem;
+      animation: fadeIn 2s ease 0.5s forwards;
+    }
+
+    .card {
+      background: white;
+      color: #E2001A;
+      border-radius: 20px;
+      padding: 2rem 3rem;
+      text-align: center;
+      width: 250px;
+      cursor: pointer;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+      transition: all 0.4s ease;
+      font-weight: 600;
+      font-size: 1.1rem;
+    }
+
+    .card:hover {
+      transform: scale(1.07);
+      background: #FFCC00;
+      color: #E2001A;
+      box-shadow: 0 12px 25px rgba(0, 0, 0, 0.3);
+    }
+
+    .footer {
+      margin-top: 3rem;
+      font-size: 0.9rem;
+      color: #fff;
+      animation: fadeIn 2s ease 1s forwards;
+    }
+
+    a.back {
+      margin-top: 2rem;
+      text-decoration: none;
+      color: #fff;
+      font-weight: 500;
+      transition: color 0.3s, transform 0.3s;
+    }
+
+    a.back:hover {
+      color: #FFCC00;
+      transform: translateY(-3px);
+    }
+
+    @media (max-width: 600px) {
+      .card {
+        width: 200px;
+        padding: 1.5rem 2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>What would you like to do today?</h1>
+  <div class="button-container">
+    <div class="card" onclick="window.location.href='upload.html'">Upload Photos & Videos</div>
+    <div class="card" onclick="window.location.href='gallery.html'">Explore Gallery</div>
+  </div>
+  <a href="index.html" class="back">← Back to Home</a>
+  <div class="footer">Made by Adika • CBM Gallery</div>
+</body>
+</html>

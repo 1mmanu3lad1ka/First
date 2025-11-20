@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CBM Login</title>
+<style>
+  /* ===== General Styles ===== */
+  body {
+    font-family: "Segoe UI", Roboto, sans-serif;
+    margin: 0;
+    padding: 0;
+    background: linear-gradient(135deg, #C8102E, #FFD100);
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+  }
+
+  /* ===== Login Container ===== */
+  .login-container {
+    background: white;
+    padding: 40px 30px;
+    border-radius: 15px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    width: 350px;
+    text-align: center;
+    animation: fadeIn 1s ease forwards;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .login-container h2 {
+    color: #C8102E;
+    margin-bottom: 25px;
+    font-size: 1.5rem;
+  }
+
+  /* ===== Input Fields ===== */
+  .login-container input {
+    width: 100%;
+    padding: 12px 15px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 1rem;
+    outline: none;
+    transition: 0.3s ease;
+  }
+
+  .login-container input:focus {
+    border-color: #C8102E;
+    box-shadow: 0 0 10px rgba(200,16,46,0.4);
+    transform: scale(1.02);
+  }
+
+  /* ===== Buttons ===== */
+  .login-container button {
+    width: 100%;
+    padding: 12px;
+    margin-top: 15px;
+    border: none;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #C8102E, #FFD100);
+    color: white;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s ease;
+    position: relative;
+  }
+
+  .login-container button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 5px 15px rgba(200,16,46,0.3);
+  }
+
+  /* ===== Guest Tooltip ===== */
+  .guest-container {
+    position: relative;
+  }
+
+  .guest-tooltip {
+    visibility: hidden;
+    opacity: 0;
+    width: 200px;
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 6px;
+    position: absolute;
+    bottom: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.8rem;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    pointer-events: none;
+    z-index: 10;
+  }
+
+  .guest-container:hover .guest-tooltip {
+    visibility: visible;
+    opacity: 1;
+  }
+
+  /* ===== Links ===== */
+  .login-container a {
+    display: block;
+    margin-top: 12px;
+    font-size: 0.9rem;
+    color: #C8102E;
+    text-decoration: none;
+    transition: color 0.3s ease;
+  }
+
+  .login-container a:hover {
+    color: #FFD100;
+  }
+
+  /* ===== Floating Logo ===== */
+  .logo {
+    margin-bottom: 20px;
+    animation: float 3s ease-in-out infinite;
+  }
+
+  .logo img {
+    height: 60px;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+</style>
+</head>
+<body>
+
+<div class="login-container">
+  <div class="logo">
+    <img src="cbm-logo.png" alt="CBM Logo">
+  </div>
+  <h2>Login</h2>
+  <input type="text" placeholder="Username" id="username">
+  <input type="password" placeholder="Password" id="password">
+  <button id="loginBtn">Login</button>
+
+  <!-- Guest Button with Tooltip -->
+  <div class="guest-container">
+    <button id="guestBtn">Continue as Guest</button>
+    <span class="guest-tooltip">You will have view-only access to the gallery.</span>
+  </div>
+
+  <a href="#">Forgot Password?</a>
+</div>
+
+<script>
+  const loginBtn = document.getElementById("loginBtn");
+  const guestBtn = document.getElementById("guestBtn");
+
+  loginBtn.addEventListener("click", () => {
+    const username = document.getElementById("username").value.trim();
+    const password = document.getElementById("password").value.trim();
+
+    if(!username || !password){
+      alert("Please fill in both fields!");
+      return;
+    }
+
+    // Placeholder for backend login
+    alert(`Logging in as ${username}`);
+  });
+
+  guestBtn.addEventListener("click", () => {
+    // Redirect to gallery as a guest
+    window.location.href = "gallery.html";
+  });
+</script>
+</body>
+</html>
